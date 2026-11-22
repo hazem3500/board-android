@@ -14,7 +14,7 @@ jobs:
         run: |
           set -euo pipefail
           tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          got=$("$tools/apksigner" verify --print-certs board.apk | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr a-f A-F | sed 's/../&:/g;s/:$//')
+          got=$("$tools/apksigner" verify --print-certs board.apk | grep -m1 'certificate SHA-256 digest:' | sed 's/.*digest: //' | tr a-f A-F | sed 's/../&:/g;s/:$//')
           test "$got" = "A0:07:FB:AA:AA:E0:BF:BF:EA:93:CB:82:98:E4:D4:FD:8C:55:C2:D4:BB:E9:B6:BD:B0:1B:8E:F6:0D:7D:DC:57" || { echo "unexpected signer: $got"; exit 1; }
       - name: Publish
         env: { GH_TOKEN: '${{ github.token }}', TAG: '${{ github.ref_name }}' }
