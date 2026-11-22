@@ -1,0 +1,23 @@
+name: release
+on:
+  push:
+    tags: ['v*']
+permissions:
+  contents: write
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - uses: actions/checkout@v4
+      - name: Check the APK is signed by the Board release key
+        run: |
+          set -euo pipefail
+          tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
+          got=$("$tools/apksigner" verify --print-certs board.apk | sed -n 's/^Signer #1 certificate SHA-256 digest: //p' | tr a-f A-F | sed 's/../&:/g;s/:$//')
+          test "$got" = "A5:09:B0:69:00:08:F9:DA:B6:FA:3B:90:90:D0:67:A6:BF:B6:BA:11:2B:41:AB:AE:F4:54:D3:32:50:2F:9A:F3" || { echo "unexpected signer: $got"; exit 1; }
+      - name: Publish
+        env: { GH_TOKEN: '${{ github.token }}', TAG: '${{ github.ref_name }}' }
+        run: |
+          cp board.apk "oz-home-board-$TAG.apk"
+          gh release create "$TAG" "oz-home-board-$TAG.apk" --title "Board $TAG" --notes-file NOTES.md --verify-tag
