@@ -10,14 +10,21 @@ jobs:
     timeout-minutes: 5
     steps:
       - uses: actions/checkout@v4
-      - name: Check the APK is signed by the Board release key
+      - name: Check the APKs are signed by the Board release key
         run: |
           set -euo pipefail
           tools=$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -1)
-          got=$("$tools/apksigner" verify --print-certs board.apk | grep -m1 'certificate SHA-256 digest:' | sed 's/.*digest: //' | tr a-f A-F | sed 's/../&:/g;s/:$//')
-          test "$got" = "A0:07:FB:AA:AA:E0:BF:BF:EA:93:CB:82:98:E4:D4:FD:8C:55:C2:D4:BB:E9:B6:BD:B0:1B:8E:F6:0D:7D:DC:57" || { echo "unexpected signer: $got"; exit 1; }
+          # The phone APK, and the Pixel Watch APK when the release has one.
+          for apk in board.apk $(test -f board-wear.apk && echo board-wear.apk); do
+            got=$("$tools/apksigner" verify --print-certs "$apk" | grep -m1 'certificate SHA-256 digest:' | sed 's/.*digest: //' | tr a-f A-F | sed 's/../&:/g;s/:$//')
+            test "$got" = "A0:07:FB:AA:AA:E0:BF:BF:EA:93:CB:82:98:E4:D4:FD:8C:55:C2:D4:BB:E9:B6:BD:B0:1B:8E:F6:0D:7D:DC:57" || { echo "unexpected signer of $apk: $got"; exit 1; }
+          done
       - name: Publish
         env: { GH_TOKEN: '${{ github.token }}', TAG: '${{ github.ref_name }}' }
         run: |
           cp board.apk "oz-home-board-$TAG.apk"
-          gh release create "$TAG" "oz-home-board-$TAG.apk" --title "Board $TAG" --notes-file NOTES.md --verify-tag
+          files=("oz-home-board-$TAG.apk")
+          # The watch APK's name doesn't start with oz-home-board-v, so an Obtainium filter of ^oz-home-board-v keeps
+          # the phone on the phone APK.
+          if [ -f board-wear.apk ]; then cp board-wear.apk "oz-home-board-wear-$TAG.apk"; files+=("oz-home-board-wear-$TAG.apk"); fi
+          gh release create "$TAG" "${files[@]}" --title "Board $TAG" --notes-file NOTES.md --verify-tag

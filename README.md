@@ -14,3 +14,7 @@ A0:07:FB:AA:AA:E0:BF:BF:EA:93:CB:82:98:E4:D4:FD:8C:55:C2:D4:BB:E9:B6:BD:B0:1B:8E
 
 Releases are pushed by the private build as a tag `vX.Y.Z` whose commit holds `board.apk` and `NOTES.md`;
 `.github/workflows/release.yml` checks the APK's signer against the fingerprint above and publishes the release.
+
+From v1.4.0 a release also carries the Pixel Watch app, `oz-home-board-wear-vX.Y.Z.apk`, signed with the same key.
+Install it on the watch with Wear Installer or `adb`, then pair from the watch. In Obtainium, set the Board app's
+"Filter APKs by regular expression" to `^oz-home-board-v` so the phone keeps updating the phone APK without asking.
