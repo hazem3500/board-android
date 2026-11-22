@@ -9,7 +9,7 @@ Add it in Obtainium: [obtainium://add/https://github.com/hazem3500/board-android
 Release signing certificate (SHA-256), the same one `https://board.zem.cool/.well-known/assetlinks.json` lists:
 
 ```
-A5:09:B0:69:00:08:F9:DA:B6:FA:3B:90:90:D0:67:A6:BF:B6:BA:11:2B:41:AB:AE:F4:54:D3:32:50:2F:9A:F3
+A0:07:FB:AA:AA:E0:BF:BF:EA:93:CB:82:98:E4:D4:FD:8C:55:C2:D4:BB:E9:B6:BD:B0:1B:8E:F6:0D:7D:DC:57
 ```
 
 Releases are pushed by the private build as a tag `vX.Y.Z` whose commit holds `board.apk` and `NOTES.md`;
